@@ -11,6 +11,7 @@ let stompClient = null;
  */
 export const conectarSocket = (callbacks) => {
   const socketUrl = buildSocketUrl(API_BASE_URL);
+  console.log("🔌 SockJS URL:", socketUrl);
   const socket = new SockJS(socketUrl);
   
   stompClient = new Client({

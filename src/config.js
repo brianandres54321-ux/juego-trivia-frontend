@@ -1,7 +1,7 @@
 // src/config.js
 
 const DEFAULT_API_BASE_URL = "https://juego-trivia-backend.onrender.com";
-const DEFAULT_WS_BASE_URL = "wss://juego-trivia-backend.onrender.com/ws";
+const DEFAULT_WS_BASE_URL = "https://juego-trivia-backend.onrender.com/ws";
 
 const API_BASE_URL =
   process.env.REACT_APP_API_URL ||
@@ -15,18 +15,20 @@ const WS_BASE_URL =
 
 const buildSocketUrl = (baseUrl) => {
   if (!baseUrl) return DEFAULT_WS_BASE_URL;
-  if (baseUrl.startsWith("ws://") || baseUrl.startsWith("wss://")) {
-    return baseUrl.endsWith("/ws") ? baseUrl : `${baseUrl.replace(/\/$/, "")}/ws`;
+
+  const normalized = baseUrl.replace(/\/$/, "");
+
+  if (normalized.startsWith("wss://")) {
+    return normalized.replace("wss://", "https://");
   }
-  if (baseUrl.startsWith("http://")) {
-    return baseUrl.replace("http://", "ws://").replace(/\/$/, "") + "/ws";
+  if (normalized.startsWith("ws://")) {
+    return normalized.replace("ws://", "http://");
   }
-  if (baseUrl.startsWith("https://")) {
-    return baseUrl.replace("https://", "wss://").replace(/\/$/, "") + "/ws";
+  if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+    return normalized.endsWith("/ws") ? normalized : `${normalized}/ws`;
   }
-  if (baseUrl.endsWith("/ws")) return baseUrl;
-  if (baseUrl.endsWith("/")) return `${baseUrl}ws`;
-  return `${baseUrl}/ws`;
+  if (normalized.endsWith("/ws")) return normalized;
+  return `${normalized}/ws`;
 };
 
 const buildApiUrl = (baseUrl) => {

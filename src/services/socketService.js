@@ -1,6 +1,6 @@
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import { API_BASE_URL } from "../config";
+import { WS_BASE_URL, API_BASE_URL, buildSocketUrl } from "../config";
 
 let stompClient = null;
 
@@ -9,8 +9,9 @@ let stompClient = null;
  */
 export const conectarSocket = (callbacks) => {
   const { codigoSala, onConnect } = callbacks;
-  // const socket = new SockJS("http://192.168.1.6/ws");
-  const socket = new SockJS(`${API_BASE_URL}/ws`);
+  const socketUrl = buildSocketUrl(WS_BASE_URL || API_BASE_URL);
+  console.log("🔌 Conectando WebSocket a:", socketUrl);
+  const socket = new SockJS(socketUrl);
 
 
 
@@ -25,29 +26,57 @@ export const conectarSocket = (callbacks) => {
       // 👉 Ejecutar callback para registrar al jugador actual
       if (onConnect) onConnect();
 
-      // 🟢 Suscripción a eventos por sala
-      stompClient.subscribe(
-        `/topic/jugadoresActualizados/${codigoSala}`,
-        (mensaje) => {
-          const jugadores = JSON.parse(mensaje.body);
-          callbacks.onJugadores && callbacks.onJugadores(jugadores);
-        }
-      );
+      const suscribir = (destino, manejador) => {
+        stompClient.subscribe(destino, (mensaje) => {
+          try {
+            const payload = JSON.parse(mensaje.body);
+            manejador(payload);
+          } catch (error) {
+            console.warn("⚠️ Error leyendo mensaje STOMP", error, mensaje.body);
+          }
+        });
+      };
 
-      stompClient.subscribe(`/topic/pregunta/${codigoSala}`, (mensaje) => {
-        const pregunta = JSON.parse(mensaje.body);
+      // 🟢 Suscripción a eventos por sala
+      suscribir(`/topic/jugadoresActualizados/${codigoSala}`, (jugadores) => {
+        callbacks.onJugadores && callbacks.onJugadores(jugadores);
+      });
+      suscribir(`/topic/jugadoresActualizados`, (jugadores) => {
+        callbacks.onJugadores && callbacks.onJugadores(jugadores);
+      });
+
+      suscribir(`/topic/pregunta/${codigoSala}`, (pregunta) => {
+        callbacks.onPregunta && callbacks.onPregunta(pregunta);
+      });
+      suscribir(`/topic/pregunta`, (pregunta) => {
         callbacks.onPregunta && callbacks.onPregunta(pregunta);
       });
 
-      stompClient.subscribe(`/topic/resultado/${codigoSala}`, (mensaje) => {
-        const resultado = JSON.parse(mensaje.body);
+      suscribir(`/topic/resultado/${codigoSala}`, (resultado) => {
+        callbacks.onResultado && callbacks.onResultado(resultado);
+      });
+      suscribir(`/topic/resultado`, (resultado) => {
         callbacks.onResultado && callbacks.onResultado(resultado);
       });
 
-      stompClient.subscribe(`/topic/finJuego/${codigoSala}`, (mensaje) => {
-        const ranking = JSON.parse(mensaje.body);
+      suscribir(`/topic/finJuego/${codigoSala}`, (ranking) => {
         callbacks.onFinJuego && callbacks.onFinJuego(ranking);
       });
+      suscribir(`/topic/finJuego`, (ranking) => {
+        callbacks.onFinJuego && callbacks.onFinJuego(ranking);
+      });
+    },
+
+    onStompError: (frame) => {
+      console.error("❌ Error STOMP:", frame);
+    },
+
+    onWebSocketError: (event) => {
+      console.error("❌ Error de WebSocket:", event);
+    },
+
+    onWebSocketClose: () => {
+      console.warn("⚠️ WebSocket cerrado");
     },
   });
 

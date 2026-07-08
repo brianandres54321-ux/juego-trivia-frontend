@@ -1,7 +1,7 @@
 // src/services/socketService.js
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import { API_BASE_URL } from "../config";
+import { API_BASE_URL, buildSocketUrl } from "../config";
 
 let stompClient = null;
 
@@ -10,8 +10,8 @@ let stompClient = null;
  * @param {Object} callbacks - Funciones de callback para cada evento
  */
 export const conectarSocket = (callbacks) => {
-  // const socket = new SockJS("http://localhost:8080/ws");
-  const socket = new SockJS(`${API_BASE_URL}/ws`);
+  const socketUrl = buildSocketUrl(API_BASE_URL);
+  const socket = new SockJS(socketUrl);
   
   stompClient = new Client({
     webSocketFactory: () => socket,

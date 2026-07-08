@@ -17,6 +17,9 @@ function App() {
     if (jugador && jugador.codigo) {
       conectarSocket({
         codigoSala: jugador.codigo,
+        onConnect: () => {
+          enviarNuevoJugador(jugador.nombre, jugador.codigo);
+        },
         onJugadores: (lista) => setJugadores(lista),
         onPregunta: (pregunta) => {
           console.log("📩 Pregunta recibida:", pregunta);
@@ -30,10 +33,6 @@ function App() {
           setFase("fin");
         },
       });
-
-      setTimeout(() => {
-        enviarNuevoJugador(jugador.nombre, jugador.codigo);
-      }, 1000);
     }
   }, [jugador]);
 

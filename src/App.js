@@ -1,25 +1,97 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import PantallaInicio from "./components/PantallaInicio";
+import CrearPartidaPrivada from "./components/CrearPartidaPrivada";
+import SalaEspera from "./components/SalaEspera";
+import Juego from "./components/Juego";
+import RankingFinal from "./components/RankingFinal";
+import { conectarSocket, enviarNuevoJugador } from "./services/socketService";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const [jugador, setJugador] = useState(null);
+  const [jugadores, setJugadores] = useState([]);
+  const [pregunta, setPregunta] = useState(null);
+  const [ranking, setRanking] = useState(null);
+  const [fase, setFase] = useState("inicio");
+
+  useEffect(() => {
+    if (jugador && jugador.codigo) {
+      conectarSocket({
+        codigoSala: jugador.codigo,
+        onJugadores: (lista) => setJugadores(lista),
+        onPregunta: (pregunta) => {
+          console.log("📩 Pregunta recibida:", pregunta);
+          setPregunta(pregunta);
+          setFase("juego");
+        },
+        onResultado: () => {},
+        onFinJuego: (ranking) => {
+          console.log("🏁 Fin del juego:", ranking);
+          setRanking(ranking);
+          setFase("fin");
+        },
+      });
+
+      setTimeout(() => {
+        enviarNuevoJugador(jugador.nombre, jugador.codigo);
+      }, 1000);
+    }
+  }, [jugador]);
+
+  // Fase inicial
+  if (fase === "inicio") {
+    return (
+      <PantallaInicio
+        onJoin={(datos) => {
+          setJugador({ ...datos, privada: false });
+          setFase("espera");
+        }}
+        onCrearPartidaPrivada={() => setFase("crear")}
+      />
+    );
+  }
+
+  // Crear partida privada
+  if (fase === "crear") {
+    return (
+      <CrearPartidaPrivada
+        onVolver={() => setFase("inicio")}
+        onIrSalaEspera={(nombreJugador, codigo) => {
+          setJugador({ nombre: nombreJugador, codigo });
+          setFase("espera");
+        }}
+      />
+    );
+  }
+
+  // Sala de espera
+  if (fase === "espera") {
+    return (
+      <SalaEspera
+        nombreJugador={jugador.nombre}
+        jugadores={jugadores}
+        codigoSala={jugador.codigo}
+      />
+    );
+  }
+
+  // Juego
+  if (fase === "juego") {
+    return (
+      <Juego
+        nombreJugador={jugador.nombre}
+        jugadores={jugadores}
+        pregunta={pregunta}
+        codigoSala={jugador.codigo}
+      />
+    );
+  }
+
+  // Fin del juego
+  if (fase === "fin") {
+    return <RankingFinal ranking={ranking} nombreJugador={jugador.nombre} />;
+  }
+
+  return null;
 }
 
 export default App;

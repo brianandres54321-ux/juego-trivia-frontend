@@ -8,13 +8,23 @@ function MathViewer({ text }) {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const parts = text.split(/(\$.*?\$)/g);
+    const normalized = text ?? "";
+    const parts = normalized.split(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$)/g);
     containerRef.current.innerHTML = "";
 
     parts.forEach((part) => {
       const span = document.createElement("span");
 
-      if (part.startsWith("$") && part.endsWith("$") && part.length > 2) {
+      if (part.startsWith("$$") && part.endsWith("$$") && part.length > 4) {
+        try {
+          katex.render(part.slice(2, -2), span, {
+            throwOnError: false,
+            displayMode: true,
+          });
+        } catch {
+          span.textContent = part;
+        }
+      } else if (part.startsWith("$") && part.endsWith("$") && part.length > 2) {
         try {
           katex.render(part.slice(1, -1), span, { throwOnError: false });
         } catch {

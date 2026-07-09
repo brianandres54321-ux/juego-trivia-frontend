@@ -9,7 +9,8 @@ function MathViewer({ text }) {
     if (!containerRef.current) return;
 
     const normalized = text ?? "";
-    const parts = normalized.split(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$)/g);
+    // const parts = normalized.split(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$)/g);
+    const parts = normalized.split(/(\$\$[\s\S]+?\$\$|\$[^$]+?\$)/g);
     containerRef.current.innerHTML = "";
 
     parts.forEach((part) => {

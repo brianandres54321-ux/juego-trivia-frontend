@@ -1,6 +1,7 @@
 // src/components/Juego.js
 import React, { useState, useEffect } from "react";
 import { enviarRespuesta } from "../services/socketService";
+import MathViewer from "./MathViewer";
 
 function Juego({ nombreJugador, pregunta, jugadores, codigoSala }) {
   const [tiempoRestante, setTiempoRestante] = useState(15);
@@ -36,7 +37,9 @@ function Juego({ nombreJugador, pregunta, jugadores, codigoSala }) {
 
   return (
     <div className="container mt-5">
-      <h3 className="mb-4 text-center">{pregunta.texto}</h3>
+      <div className="mb-4 text-center">
+        <MathViewer text={pregunta.texto} />
+      </div>
 
       <div className="row">
         {pregunta.respuestas.map((r, i) => (
@@ -44,11 +47,11 @@ function Juego({ nombreJugador, pregunta, jugadores, codigoSala }) {
             <button
               className={`btn btn-${
                 ["primary", "success", "warning", "danger"][i]
-              } w-100`}
+              } w-100 text-start`}
               onClick={() => handleRespuesta(r)}
               disabled={respuestaSeleccionada !== null}
             >
-              {r.texto}
+              <MathViewer text={r.texto} />
             </button>
           </div>
         ))}

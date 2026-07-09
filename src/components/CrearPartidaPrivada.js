@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import PreguntaForm from "./PreguntaForm";
+import MathViewer from "./MathViewer";
 import { toast, ToastContainer } from "react-toastify";
 import { API_BASE_URL } from "../config"; // 🔹 Importa la URL base global
 
@@ -196,7 +197,7 @@ function CrearPartidaPrivada({ onVolver, onIrSalaEspera }) {
           <ul className="list-group">
             {preguntas.map((p, i) => (
               <li key={i} className="list-group-item">
-                {p.texto}
+                <MathViewer text={p.texto} />
               </li>
             ))}
           </ul>

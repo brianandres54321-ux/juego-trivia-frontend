@@ -12,6 +12,7 @@ function App() {
   const [pregunta, setPregunta] = useState(null);
   const [ranking, setRanking] = useState(null);
   const [fase, setFase] = useState("inicio");
+  const [finalNombre, setFinalNombre] = useState(null);
 
   useEffect(() => {
     if (jugador && jugador.codigo) {
@@ -29,8 +30,12 @@ function App() {
         onResultado: () => {},
         onFinJuego: (ranking) => {
           console.log("🏁 Fin del juego:", ranking);
+          // Guardar ranking y nombre final para mostrar en la pantalla de fin,
+          // y limpiar el estado `jugador` para que no quede nadie marcado como anfitrión.
           setRanking(ranking);
+          setFinalNombre((prev) => (jugador && jugador.nombre ? jugador.nombre : prev));
           setFase("fin");
+          setJugador(null);
         },
       });
     }
@@ -87,7 +92,7 @@ function App() {
 
   // Fin del juego
   if (fase === "fin") {
-    return <RankingFinal ranking={ranking} nombreJugador={jugador.nombre} />;
+    return <RankingFinal ranking={ranking} nombreJugador={finalNombre} />;
   }
 
   return null;

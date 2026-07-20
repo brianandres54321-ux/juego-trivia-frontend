@@ -35,6 +35,12 @@ function PreguntaForm({ onAgregar }) {
   const [activeField, setActiveField] = useState({ type: "pregunta" });
   const [pendingCursor, setPendingCursor] = useState(null); // { esPregunta, index, pos }
 
+  // Controla si cada campo muestra el texto crudo (editable) o el resultado
+  // renderizado (como la vista previa). Se activa el modo edición al hacer
+  // click/foco y se vuelve al renderizado al salir del campo.
+  const [editandoPregunta, setEditandoPregunta] = useState(true);
+  const [editandoRespuesta, setEditandoRespuesta] = useState([true, true, true, true]);
+
   const preguntaRef = useRef(null);
   const respuestaRefs = useRef([null, null, null, null]);
 
@@ -52,6 +58,37 @@ function PreguntaForm({ onAgregar }) {
     setPendingCursor(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [texto, respuestas]);
+
+  // Al pasar del modo "vista previa" a edición, ubica el cursor al final
+  // del texto en vez de dejarlo en una posición inconsistente entre navegadores.
+  useEffect(() => {
+    const esPregunta = activeField.type === "pregunta";
+    const enEdicion = esPregunta ? editandoPregunta : editandoRespuesta[activeField.index];
+    if (!enEdicion) return;
+
+    const node = esPregunta ? preguntaRef.current : respuestaRefs.current[activeField.index];
+    const valor = esPregunta ? texto : respuestas[activeField.index];
+    if (node) {
+      const fin = valor.length;
+      node.focus();
+      node.setSelectionRange(fin, fin);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editandoPregunta, editandoRespuesta, activeField]);
+
+  const activarEdicionPregunta = () => {
+    setActiveField({ type: "pregunta" });
+    setEditandoPregunta(true);
+  };
+
+  const activarEdicionRespuesta = (i) => {
+    setActiveField({ type: "respuesta", index: i });
+    setEditandoRespuesta((prev) => {
+      const copia = [...prev];
+      copia[i] = true;
+      return copia;
+    });
+  };
 
   const insertSnippet = (item) => {
     const esPregunta = activeField.type === "pregunta";
@@ -105,6 +142,8 @@ function PreguntaForm({ onAgregar }) {
     setTexto("");
     setRespuestas(["", "", "", ""]);
     setCorrecta(null);
+    setEditandoPregunta(true);
+    setEditandoRespuesta([true, true, true, true]);
   };
 
   return (
@@ -132,18 +171,25 @@ function PreguntaForm({ onAgregar }) {
         </strong>
       </p>
 
-      <textarea
-        ref={preguntaRef}
-        rows={2}
-        className="tv-input tv-textarea mb-2"
-        placeholder="Ej: Calcula el área si $x^2 + \sqrt{y}$..."
-        value={texto}
-        onFocus={() => setActiveField({ type: "pregunta" })}
-        onChange={(e) => setTexto(e.target.value)}
-      />
-      {texto && (
-        <div className="tv-preview mb-3">
-          <small className="tv-text-muted d-block mb-1">Vista previa:</small>
+      {editandoPregunta || !texto.trim() ? (
+        <textarea
+          ref={preguntaRef}
+          rows={2}
+          className="tv-input tv-textarea mb-2"
+          placeholder="Ej: Calcula el área si $x^2 + \sqrt{y}$..."
+          value={texto}
+          onFocus={activarEdicionPregunta}
+          onBlur={() => setEditandoPregunta(false)}
+          onChange={(e) => setTexto(e.target.value)}
+        />
+      ) : (
+        <div
+          className="tv-input tv-textarea tv-editable-preview mb-2"
+          role="button"
+          tabIndex={0}
+          onClick={activarEdicionPregunta}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && activarEdicionPregunta()}
+        >
           <MathViewer text={texto} />
         </div>
       )}
@@ -159,26 +205,40 @@ function PreguntaForm({ onAgregar }) {
             >
               {correcta === i ? "✓" : i + 1}
             </button>
-            <input
-              type="text"
-              ref={(el) => (respuestaRefs.current[i] = el)}
-              className="tv-input"
-              placeholder={`Respuesta ${i + 1} (ej: $\\sqrt{16}$)`}
-              value={r}
-              onFocus={() => setActiveField({ type: "respuesta", index: i })}
-              onChange={(e) => {
-                const copia = [...respuestas];
-                copia[i] = e.target.value;
-                setRespuestas(copia);
-              }}
-            />
+
+            {editandoRespuesta[i] || !r.trim() ? (
+              <input
+                type="text"
+                ref={(el) => (respuestaRefs.current[i] = el)}
+                className="tv-input"
+                placeholder={`Respuesta ${i + 1} (ej: $\\sqrt{16}$)`}
+                value={r}
+                onFocus={() => activarEdicionRespuesta(i)}
+                onBlur={() => {
+                  setEditandoRespuesta((prev) => {
+                    const copia = [...prev];
+                    copia[i] = false;
+                    return copia;
+                  });
+                }}
+                onChange={(e) => {
+                  const copia = [...respuestas];
+                  copia[i] = e.target.value;
+                  setRespuestas(copia);
+                }}
+              />
+            ) : (
+              <div
+                className="tv-input tv-editable-preview"
+                role="button"
+                tabIndex={0}
+                onClick={() => activarEdicionRespuesta(i)}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && activarEdicionRespuesta(i)}
+              >
+                <MathViewer text={r} />
+              </div>
+            )}
           </div>
-          {r && (
-            <div className="tv-preview mt-1" style={{ marginLeft: "2.9rem" }}>
-              <small className="tv-text-muted me-2">Vista previa:</small>
-              <MathViewer text={r} />
-            </div>
-          )}
         </div>
       ))}
 

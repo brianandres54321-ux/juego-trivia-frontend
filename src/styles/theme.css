@@ -202,6 +202,21 @@ body {
   line-height: 1.4;
 }
 
+/* ---------- Campo en modo "vista previa" (clic para editar) ---------- */
+.tv-editable-preview {
+  display: flex;
+  align-items: center;
+  cursor: text;
+  font-size: 1.05rem;
+}
+
+.tv-editable-preview:hover,
+.tv-editable-preview:focus-visible {
+  border-color: var(--tv-cyan);
+  background: rgba(34, 211, 238, 0.08);
+  outline: none;
+}
+
 .tv-select option {
   background: var(--tv-bg-1);
   color: var(--tv-text);

@@ -1,6 +1,10 @@
 import React from "react";
 import { iniciarJuego } from "../services/socketService";
 
+function iniciales(nombre = "") {
+  return nombre.trim().slice(0, 1).toUpperCase() || "?";
+}
+
 function SalaEspera({ nombreJugador, jugadores = [], codigoSala }) {
   const esAnfitrion = jugadores.length > 0 && jugadores[0].nombre === nombreJugador;
 
@@ -12,77 +16,61 @@ function SalaEspera({ nombreJugador, jugadores = [], codigoSala }) {
   };
 
   return (
-    <div className="container mt-5 d-flex flex-column align-items-center">
-      <div className="text-center mb-4">
-        <h2 className="fw-bold text-primary">🎯 Sala de Espera</h2>
-        <p className="fs-5 text-muted">
-          Bienvenido,{" "}
-          <strong className="text-success">{nombreJugador || "Jugador"}</strong>
+    <div className="tv-shell">
+      <div className="tv-card tv-card-wide text-center">
+        <span className="tv-eyebrow">⏳ Sala de espera</span>
+        <h2 className="tv-title mb-1">¡Ya casi arrancamos!</h2>
+        <p className="tv-subtitle mb-3">
+          Bienvenido, <strong style={{ color: "var(--tv-cyan)" }}>{nombreJugador || "Jugador"}</strong>
         </p>
-        <p className="text-secondary small">
-          <strong>Código de sala:</strong> {codigoSala}
-        </p>
-      </div>
-
-      <div className="card shadow-lg border-0 w-75">
-        <div className="card-header bg-primary text-white text-center">
-          <h4 className="m-0">Jugadores Conectados ({jugadores.length})</h4>
+        <div className="mb-4">
+          <span className="tv-badge">Código de sala: {codigoSala}</span>
         </div>
 
-        <div
-          className="card-body"
-          style={{ maxHeight: "300px", overflowY: "auto", background: "#f9fafc" }}
-        >
+        <div className="tv-panel text-start">
+          <div className="d-flex align-items-center justify-content-between mb-3">
+            <h5 className="mb-0">Jugadores conectados</h5>
+            <span className="tv-badge">{jugadores.length}</span>
+          </div>
+
           {jugadores.length === 0 ? (
-            <div className="text-center text-secondary py-3">
-              <em>No hay jugadores conectados todavía...</em>
-            </div>
+            <p className="tv-text-muted text-center py-3 mb-0 tv-pulse">
+              Esperando a que se conecten jugadores...
+            </p>
           ) : (
-            <div className="row">
+            <div className="tv-scroll-list">
               {jugadores.map((j, index) => (
-                <div key={index} className="col-md-6 col-lg-4 mb-3">
-                  <div
-                    className={`card h-100 shadow-sm border-0 ${
-                      j.nombre === nombreJugador ? "border-success" : ""
-                    }`}
-                  >
-                    <div
-                      className={`card-body text-center rounded-3 ${
-                        j.nombre === nombreJugador
-                          ? "bg-success bg-opacity-25"
-                          : "bg-light"
-                      }`}
-                    >
-                      <h5 className="card-title mb-2 text-dark">
-                        {index + 1}. {j.nombre}
-                      </h5>
-                      <p className="card-text text-secondary">
-                        🏆 {j.puntos ?? 0} puntos
-                      </p>
+                <div
+                  key={index}
+                  className={`tv-player-row ${j.nombre === nombreJugador ? "tv-is-me" : ""}`}
+                >
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="tv-avatar">{iniciales(j.nombre)}</div>
+                    <div>
+                      <div className="fw-bold">
+                        {j.nombre} {index === 0 && <span title="Anfitrión">👑</span>}
+                      </div>
+                      <div className="tv-text-muted small">Jugador #{index + 1}</div>
                     </div>
                   </div>
+                  <span className="tv-points">{j.puntos ?? 0} pts</span>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <div className="card-footer bg-white text-center">
+        <div className="mt-4">
           {esAnfitrion ? (
             <button
-              className={`btn btn-lg ${
-                jugadores.length === 0
-                  ? "btn-secondary disabled"
-                  : "btn-success shadow"
-              }`}
+              className={`tv-btn tv-btn-block ${jugadores.length === 0 ? "tv-btn-ghost" : "tv-btn-primary"}`}
               onClick={handleIniciarJuego}
+              disabled={jugadores.length === 0}
             >
-              {jugadores.length === 0
-                ? "Esperando jugadores..."
-                : "🚀 Iniciar Juego"}
+              {jugadores.length === 0 ? "Esperando jugadores..." : "🚀 Iniciar juego"}
             </button>
           ) : (
-            <p className="text-muted mt-2">
+            <p className="tv-text-muted tv-pulse mb-0">
               Esperando a que el anfitrión inicie el juego...
             </p>
           )}

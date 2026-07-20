@@ -3,13 +3,23 @@ import PantallaInicio from "./components/PantallaInicio";
 import CrearPartidaPrivada from "./components/CrearPartidaPrivada";
 import SalaEspera from "./components/SalaEspera";
 import Juego from "./components/Juego";
+import ResultadoPregunta from "./components/ResultadoPregunta";
 import RankingFinal from "./components/RankingFinal";
 import { conectarSocket, enviarNuevoJugador } from "./services/socketService";
+
+function TvBackground() {
+  return (
+    <div className="tv-app-bg" aria-hidden="true">
+      <div className="tv-blob-3" />
+    </div>
+  );
+}
 
 function App() {
   const [jugador, setJugador] = useState(null);
   const [jugadores, setJugadores] = useState([]);
   const [pregunta, setPregunta] = useState(null);
+  const [resultado, setResultado] = useState(null);
   const [ranking, setRanking] = useState(null);
   const [fase, setFase] = useState("inicio");
   const [finalNombre, setFinalNombre] = useState(null);
@@ -25,9 +35,14 @@ function App() {
         onPregunta: (pregunta) => {
           console.log("📩 Pregunta recibida:", pregunta);
           setPregunta(pregunta);
+          setResultado(null);
           setFase("juego");
         },
-        onResultado: () => {},
+        onResultado: (resultado) => {
+          console.log("📊 Resultado recibido:", resultado);
+          setResultado(resultado);
+          setFase("resultado");
+        },
         onFinJuego: (ranking) => {
           console.log("🏁 Fin del juego:", ranking);
           // Guardar ranking y nombre final para mostrar en la pantalla de fin,
@@ -41,9 +56,10 @@ function App() {
     }
   }, [jugador]);
 
-  // Fase inicial
+  let vista = null;
+
   if (fase === "inicio") {
-    return (
+    vista = (
       <PantallaInicio
         onJoin={(datos) => {
           setJugador({ ...datos, privada: false });
@@ -52,11 +68,8 @@ function App() {
         onCrearPartidaPrivada={() => setFase("crear")}
       />
     );
-  }
-
-  // Crear partida privada
-  if (fase === "crear") {
-    return (
+  } else if (fase === "crear") {
+    vista = (
       <CrearPartidaPrivada
         onVolver={() => setFase("inicio")}
         onIrSalaEspera={(nombreJugador, codigo) => {
@@ -65,22 +78,16 @@ function App() {
         }}
       />
     );
-  }
-
-  // Sala de espera
-  if (fase === "espera") {
-    return (
+  } else if (fase === "espera") {
+    vista = (
       <SalaEspera
         nombreJugador={jugador.nombre}
         jugadores={jugadores}
         codigoSala={jugador.codigo}
       />
     );
-  }
-
-  // Juego
-  if (fase === "juego") {
-    return (
+  } else if (fase === "juego") {
+    vista = (
       <Juego
         nombreJugador={jugador.nombre}
         jugadores={jugadores}
@@ -88,14 +95,18 @@ function App() {
         codigoSala={jugador.codigo}
       />
     );
+  } else if (fase === "resultado") {
+    vista = <ResultadoPregunta resultado={resultado} nombreJugador={jugador?.nombre} />;
+  } else if (fase === "fin") {
+    vista = <RankingFinal ranking={ranking} nombreJugador={finalNombre} />;
   }
 
-  // Fin del juego
-  if (fase === "fin") {
-    return <RankingFinal ranking={ranking} nombreJugador={finalNombre} />;
-  }
-
-  return null;
+  return (
+    <>
+      <TvBackground />
+      {vista}
+    </>
+  );
 }
 
 export default App;

@@ -1,0 +1,612 @@
+/* src/styles/theme.css
+   Sistema de diseño "Arcade" para Trivia Master.
+   Fondo oscuro degradado + glassmorphism + acentos neón.
+*/
+
+:root {
+  --tv-bg-0: #0a0818;
+  --tv-bg-1: #170f2e;
+  --tv-bg-2: #1f1440;
+
+  --tv-violet: #8b5cf6;
+  --tv-cyan: #22d3ee;
+  --tv-pink: #ec4899;
+  --tv-amber: #f59e0b;
+  --tv-emerald: #10b981;
+  --tv-red: #ef4444;
+  --tv-blue: #3b82f6;
+
+  --tv-text: #f5f3ff;
+  --tv-text-muted: #ab9fd1;
+
+  --tv-glass-bg: rgba(255, 255, 255, 0.055);
+  --tv-glass-bg-strong: rgba(255, 255, 255, 0.09);
+  --tv-glass-border: rgba(255, 255, 255, 0.14);
+
+  --tv-brand-gradient: linear-gradient(135deg, var(--tv-violet), var(--tv-pink));
+  --tv-brand-gradient-2: linear-gradient(135deg, var(--tv-cyan), var(--tv-violet));
+
+  --tv-radius-lg: 26px;
+  --tv-radius-md: 16px;
+  --tv-radius-sm: 10px;
+
+  --tv-shadow-card: 0 20px 60px -20px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- Fondo global ---------- */
+body {
+  background: var(--tv-bg-0);
+  color: var(--tv-text);
+}
+
+.tv-app-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: radial-gradient(120% 120% at 15% 10%, var(--tv-bg-2) 0%, var(--tv-bg-1) 45%, var(--tv-bg-0) 100%);
+}
+
+.tv-app-bg::before,
+.tv-app-bg::after,
+.tv-app-bg .tv-blob-3 {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.4;
+  animation: tv-float 18s ease-in-out infinite;
+}
+
+.tv-app-bg::before {
+  width: 32vw;
+  height: 32vw;
+  top: -8%;
+  left: -6%;
+  background: var(--tv-violet);
+}
+
+.tv-app-bg::after {
+  width: 28vw;
+  height: 28vw;
+  bottom: -10%;
+  right: -5%;
+  background: var(--tv-cyan);
+  animation-delay: -6s;
+}
+
+.tv-app-bg .tv-blob-3 {
+  width: 22vw;
+  height: 22vw;
+  bottom: 10%;
+  left: 30%;
+  background: var(--tv-pink);
+  animation-delay: -12s;
+}
+
+@keyframes tv-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(4%, -6%) scale(1.08); }
+}
+
+/* ---------- Layout base de cada vista ---------- */
+.tv-shell {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+}
+
+.tv-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tv-cyan);
+  margin-bottom: 0.5rem;
+}
+
+.tv-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: var(--tv-brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 0.25rem;
+}
+
+.tv-subtitle {
+  color: var(--tv-text-muted);
+}
+
+/* ---------- Tarjeta glass ---------- */
+.tv-card {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  background: var(--tv-glass-bg);
+  border: 1px solid var(--tv-glass-border);
+  border-radius: var(--tv-radius-lg);
+  box-shadow: var(--tv-shadow-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 2.25rem 2rem;
+  color: var(--tv-text);
+  animation: tv-rise 0.5s ease-out;
+}
+
+.tv-card-wide {
+  max-width: 780px;
+}
+
+.tv-card-xl {
+  max-width: 960px;
+}
+
+@keyframes tv-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Inputs ---------- */
+.tv-field {
+  margin-bottom: 1.1rem;
+  text-align: left;
+}
+
+.tv-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--tv-text-muted);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.03em;
+}
+
+.tv-input,
+.tv-select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--tv-glass-border);
+  border-radius: var(--tv-radius-sm);
+  color: var(--tv-text);
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.tv-input::placeholder {
+  color: rgba(245, 243, 255, 0.35);
+}
+
+.tv-input:focus,
+.tv-select:focus {
+  border-color: var(--tv-cyan);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.18);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.tv-textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.tv-select option {
+  background: var(--tv-bg-1);
+  color: var(--tv-text);
+}
+
+.tv-checkbox {
+  accent-color: var(--tv-pink);
+  width: 1.05rem;
+  height: 1.05rem;
+  cursor: pointer;
+}
+
+/* ---------- Botones ---------- */
+.tv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 999px;
+  font-weight: 700;
+  padding: 0.75rem 1.6rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+  white-space: nowrap;
+}
+
+.tv-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tv-btn:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+.tv-btn:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.tv-btn-primary {
+  background: var(--tv-brand-gradient);
+  color: #fff;
+  box-shadow: 0 10px 26px -8px rgba(139, 92, 246, 0.65);
+}
+
+.tv-btn-primary:not(:disabled):hover {
+  box-shadow: 0 14px 34px -6px rgba(236, 72, 153, 0.55);
+}
+
+.tv-btn-secondary {
+  background: var(--tv-brand-gradient-2);
+  color: #06121a;
+  box-shadow: 0 10px 26px -8px rgba(34, 211, 238, 0.5);
+}
+
+.tv-btn-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--tv-text);
+  border: 1px solid var(--tv-glass-border);
+}
+
+.tv-btn-ghost:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.tv-btn-block {
+  width: 100%;
+}
+
+.tv-btn-sm {
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+}
+
+/* ---------- Toggle tipo pill ---------- */
+.tv-toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--tv-glass-border);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  color: var(--tv-text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* ---------- Badges / avatares ---------- */
+.tv-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--tv-glass-border);
+  color: var(--tv-text);
+}
+
+.tv-code-chip {
+  font-family: "Courier New", monospace;
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: 0.12em;
+  background: var(--tv-glass-bg-strong);
+  border: 1px dashed var(--tv-cyan);
+  color: var(--tv-cyan);
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--tv-radius-sm);
+  display: inline-block;
+}
+
+.tv-avatar {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  background: var(--tv-brand-gradient);
+  box-shadow: 0 6px 16px -4px rgba(139, 92, 246, 0.6);
+}
+
+/* ---------- Filas de jugadores / ranking ---------- */
+.tv-player-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--tv-radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tv-player-row.tv-is-me {
+  border-color: var(--tv-cyan);
+  background: rgba(34, 211, 238, 0.08);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+}
+
+.tv-player-row + .tv-player-row {
+  margin-top: 0.6rem;
+}
+
+.tv-points {
+  font-weight: 800;
+  color: var(--tv-amber);
+}
+
+.tv-medal {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #16121f;
+  flex-shrink: 0;
+}
+
+.tv-medal-1 { background: linear-gradient(135deg, #ffe08a, #f5b301); box-shadow: 0 0 18px rgba(245, 179, 1, 0.6); }
+.tv-medal-2 { background: linear-gradient(135deg, #e6e6e6, #b4b4b4); box-shadow: 0 0 18px rgba(180, 180, 180, 0.4); }
+.tv-medal-3 { background: linear-gradient(135deg, #e0a878, #b06a3a); box-shadow: 0 0 18px rgba(176, 106, 58, 0.4); }
+.tv-medal-n { background: rgba(255, 255, 255, 0.12); color: var(--tv-text); border: 1px solid var(--tv-glass-border); }
+
+/* ---------- Pantalla de juego: respuestas tipo arcade ---------- */
+.tv-answer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .tv-answer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tv-answer-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  text-align: left;
+  border: none;
+  border-radius: var(--tv-radius-md);
+  padding: 1.1rem 1.2rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.55);
+}
+
+.tv-answer-btn:not(:disabled):hover {
+  transform: translateY(-3px) scale(1.01);
+}
+
+.tv-answer-btn:disabled {
+  cursor: not-allowed;
+}
+
+.tv-answer-btn .tv-shape {
+  width: 2.1rem;
+  height: 2.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.tv-shape-triangle { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+.tv-shape-diamond { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.tv-shape-circle { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.tv-shape-square { background: linear-gradient(135deg, #10b981, #047857); }
+
+.tv-answer-btn.tv-is-selected {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+.tv-answer-btn.tv-is-dimmed {
+  filter: grayscale(0.6) brightness(0.55);
+  transform: none;
+}
+
+/* ---------- Timer circular ---------- */
+.tv-timer {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  margin: 0 auto;
+}
+
+.tv-timer svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.tv-timer circle {
+  fill: none;
+  stroke-width: 8;
+}
+
+.tv-timer .tv-timer-track {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.tv-timer .tv-timer-progress {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+}
+
+.tv-timer-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--tv-text);
+}
+
+/* ---------- Alertas / banners ---------- */
+.tv-banner-success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.05));
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: var(--tv-radius-md);
+  padding: 1.1rem 1.4rem;
+  color: var(--tv-text);
+}
+
+.tv-banner-error {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(239, 68, 68, 0.05));
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: var(--tv-radius-md);
+  padding: 1.1rem 1.4rem;
+  color: var(--tv-text);
+}
+
+/* ---------- Formularios anidados (creación de preguntas) ---------- */
+.tv-panel {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--tv-glass-border);
+  border-radius: var(--tv-radius-md);
+  padding: 1.25rem;
+}
+
+.tv-preview {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--tv-glass-border);
+  border-radius: var(--tv-radius-sm);
+  padding: 0.6rem 0.8rem;
+  font-size: 1.1rem;
+  color: var(--tv-text);
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.tv-preview .katex-display {
+  margin: 0.25rem 0;
+}
+
+/* ---------- Barra de símbolos matemáticos rápidos ---------- */
+.tv-symbol-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.tv-symbol-btn {
+  min-width: 2.4rem;
+  height: 2.2rem;
+  padding: 0 0.5rem;
+  border-radius: var(--tv-radius-sm);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--tv-glass-border);
+  color: var(--tv-text);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tv-symbol-btn:hover {
+  background: rgba(34, 211, 238, 0.16);
+  border-color: var(--tv-cyan);
+  transform: translateY(-1px);
+}
+
+.tv-option-dot {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: none;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  opacity: 0.55;
+}
+
+.tv-option-dot.tv-is-correct {
+  opacity: 1;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
+}
+
+/* ---------- KaTeX: heredar color en fondo oscuro ---------- */
+.katex, .katex * {
+  color: inherit;
+}
+
+/* ---------- Scrollbar oscura ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ---------- Utilidades ---------- */
+.tv-text-muted { color: var(--tv-text-muted); }
+.tv-scroll-list {
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+@keyframes tv-pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.tv-pulse {
+  animation: tv-pulse-soft 1.4s ease-in-out infinite;
+}

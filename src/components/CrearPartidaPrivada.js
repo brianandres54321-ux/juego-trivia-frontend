@@ -93,127 +93,130 @@ function CrearPartidaPrivada({ onVolver, onIrSalaEspera }) {
   };
 
   const copiarCodigo = async () => {
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      // ✅ Copiar usando la API moderna (solo HTTPS o localhost)
-      await navigator.clipboard.writeText(codigoSala);
-    } else {
-      // ⚙️ Fallback para entornos no seguros (como IP local)
-      const textArea = document.createElement("textarea");
-      textArea.value = codigoSala;
-      textArea.style.position = "fixed"; // evita scroll
-      textArea.style.left = "-9999px";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        // ✅ Copiar usando la API moderna (solo HTTPS o localhost)
+        await navigator.clipboard.writeText(codigoSala);
+      } else {
+        // ⚙️ Fallback para entornos no seguros (como IP local)
+        const textArea = document.createElement("textarea");
+        textArea.value = codigoSala;
+        textArea.style.position = "fixed"; // evita scroll
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+
+      toast.info("📋 Código copiado", { autoClose: 1500 });
+    } catch (err) {
+      console.error("❌ Error al copiar:", err);
+      toast.error("No se pudo copiar el código 😕");
     }
-
-    toast.info("📋 Código copiado", { autoClose: 1500 });
-  } catch (err) {
-    console.error("❌ Error al copiar:", err);
-    toast.error("No se pudo copiar el código 😕");
-  }
-};
-
+  };
 
   if (codigoSala) {
     return (
-      <div className="container mt-5 text-center">
-        <div className="alert alert-success shadow-sm p-4">
-          <h4 className="fw-bold mb-3">🎮 ¡Partida privada creada con éxito!</h4>
-          <p>Comparte este código con tus amigos:</p>
-          <h3 className="text-primary fw-bold">{codigoSala}</h3>
-          <button className="btn btn-outline-success mt-3 me-2" onClick={copiarCodigo}>
-            📋 Copiar código
-          </button>
-          <button
-            className="btn btn-primary mt-3"
-            onClick={() => onIrSalaEspera(nombreCreador, codigoSala)}
-          >
-            🚀 Ir a sala de espera
-          </button>
+      <div className="tv-shell">
+        <div className="tv-card text-center">
+          <span className="tv-eyebrow">🎮 Listo</span>
+          <h3 className="tv-title mb-3">¡Partida creada!</h3>
+          <p className="tv-subtitle mb-3">Comparte este código con tus amigos:</p>
+          <div className="tv-code-chip mb-4">{codigoSala}</div>
+          <div className="d-flex justify-content-center gap-3 flex-wrap">
+            <button className="tv-btn tv-btn-ghost" onClick={copiarCodigo}>
+              📋 Copiar código
+            </button>
+            <button
+              className="tv-btn tv-btn-primary"
+              onClick={() => onIrSalaEspera(nombreCreador, codigoSala)}
+            >
+              🚀 Ir a sala de espera
+            </button>
+          </div>
         </div>
 
-        <ToastContainer position="top-center" theme="colored" />
+        <ToastContainer position="top-center" theme="dark" />
       </div>
     );
   }
 
   return (
-    <div className="container mt-4 card p-4 shadow">
-      <h3 className="text-center text-primary fw-bold mb-4">
-        🧠 Crear Partida Privada Personalizada
-      </h3>
+    <div className="tv-shell">
+      <div className="tv-card tv-card-wide">
+        <span className="tv-eyebrow">🔒 Personalizada</span>
+        <h3 className="tv-title mb-4">Crear partida privada</h3>
 
-      <div className="mb-3">
-        <label className="fw-bold">👤 Tu nombre (anfitrión)</label>
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Tu nombre..."
-          value={nombreCreador}
-          onChange={(e) => setNombreCreador(e.target.value)}
-        />
-      </div>
-
-      <div className="mb-3">
-        <label className="fw-bold">📂 Categoría</label>
-        <div className="input-group">
-          <select
-            className="form-select"
-            value={categoriaSeleccionada}
-            onChange={(e) => {
-              setCategoriaSeleccionada(e.target.value);
-              setNuevaCategoria("");
-            }}
-          >
-            <option value="">Seleccionar existente...</option>
-            {categorias.map((cat) => (
-              <option key={cat.idCategoria} value={cat.idCategoria}>
-                {cat.nombre}
-              </option>
-            ))}
-          </select>
+        <div className="tv-field">
+          <label className="tv-label">👤 Tu nombre (anfitrión)</label>
           <input
             type="text"
-            className="form-control"
-            placeholder="...o crear una nueva"
-            value={nuevaCategoria}
-            onChange={(e) => {
-              setNuevaCategoria(e.target.value);
-              setCategoriaSeleccionada("");
-            }}
+            className="tv-input"
+            placeholder="Tu nombre..."
+            value={nombreCreador}
+            onChange={(e) => setNombreCreador(e.target.value)}
           />
         </div>
-      </div>
 
-      <PreguntaForm onAgregar={agregarPregunta} />
-
-      {preguntas.length > 0 && (
-        <div className="mt-3">
-          <h6>📚 Preguntas agregadas:</h6>
-          <ul className="list-group">
-            {preguntas.map((p, i) => (
-              <li key={i} className="list-group-item">
-                <MathViewer text={p.texto} />
-              </li>
-            ))}
-          </ul>
+        <div className="tv-field">
+          <label className="tv-label">📂 Categoría</label>
+          <div className="d-flex gap-2 flex-wrap flex-md-nowrap">
+            <select
+              className="tv-select"
+              value={categoriaSeleccionada}
+              onChange={(e) => {
+                setCategoriaSeleccionada(e.target.value);
+                setNuevaCategoria("");
+              }}
+            >
+              <option value="">Seleccionar existente...</option>
+              {categorias.map((cat) => (
+                <option key={cat.idCategoria} value={cat.idCategoria}>
+                  {cat.nombre}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              className="tv-input"
+              placeholder="...o crear una nueva"
+              value={nuevaCategoria}
+              onChange={(e) => {
+                setNuevaCategoria(e.target.value);
+                setCategoriaSeleccionada("");
+              }}
+            />
+          </div>
         </div>
-      )}
 
-      <div className="d-flex justify-content-between mt-4">
-        <button className="btn btn-secondary" onClick={onVolver}>
-          ⬅ Volver
-        </button>
-        <button className="btn btn-primary" onClick={crearPartida} disabled={creando}>
-          {creando ? "Creando..." : "🚀 Crear partida"}
-        </button>
+        <PreguntaForm onAgregar={agregarPregunta} />
+
+        {preguntas.length > 0 && (
+          <div className="mt-4">
+            <h6 className="tv-label mb-2">📚 Preguntas agregadas ({preguntas.length})</h6>
+            <div className="tv-scroll-list">
+              {preguntas.map((p, i) => (
+                <div key={i} className="tv-player-row mb-2">
+                  <MathViewer text={p.texto} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="d-flex justify-content-between mt-4 gap-3">
+          <button className="tv-btn tv-btn-ghost" onClick={onVolver}>
+            ⬅ Volver
+          </button>
+          <button className="tv-btn tv-btn-primary" onClick={crearPartida} disabled={creando}>
+            {creando ? "Creando..." : "🚀 Crear partida"}
+          </button>
+        </div>
+
+        <ToastContainer position="top-center" theme="dark" />
       </div>
-
-      <ToastContainer position="top-center" theme="colored" />
     </div>
   );
 }

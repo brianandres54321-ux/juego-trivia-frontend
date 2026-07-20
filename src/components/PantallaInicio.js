@@ -52,80 +52,88 @@ function PantallaInicio({ onJoin, onCrearPartidaPrivada }) {
   };
 
   return (
-    <div className="container text-center mt-5 p-4 card shadow border-0">
-      <h1 className="mb-4 text-primary fw-bold">🎯 Bienvenido a Trivia</h1>
+    <div className="tv-shell">
+      <div className="tv-card text-center">
+        <span className="tv-eyebrow">🧠 Trivia en vivo</span>
+        <h1 className="tv-title display-5">Trivia Master</h1>
+        <p className="tv-subtitle mb-4">
+          Respondé rápido, sumá puntos y llevate la corona 👑
+        </p>
 
-      {/* Nombre */}
-      <input
-        type="text"
-        className="form-control w-75 mx-auto mb-3"
-        placeholder="Tu nombre..."
-        value={nombre}
-        onChange={(e) => setNombre(e.target.value)}
-      />
-
-      {/* Selector de categoría SOLO si no es privada */}
-      {!privada && (
-        <select
-          className="form-select w-75 mx-auto mb-3"
-          value={categoriaSeleccionada}
-          onChange={(e) => setCategoriaSeleccionada(e.target.value)}
-        >
-          <option value="">Selecciona una categoría...</option>
-          {categorias.map((cat) => (
-            <option key={cat.idCategoria} value={cat.idCategoria}>
-              {cat.nombre}
-            </option>
-          ))}
-        </select>
-      )}
-
-      <div className="d-flex justify-content-center gap-3 mb-3">
-        <div className="form-check form-switch d-flex align-items-center">
+        <div className="tv-field">
+          <label className="tv-label">Tu nombre</label>
           <input
-            className="form-check-input"
-            type="checkbox"
-            id="privadaCheck"
-            checked={privada}
-            onChange={() => {
-              setPrivada(!privada);
-              if (!privada) setCategoriaSeleccionada("");
-            }}
+            type="text"
+            className="tv-input"
+            placeholder="¿Cómo te llamás?"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
           />
-          <label className="form-check-label ms-2" htmlFor="privadaCheck">
+        </div>
+
+        {!privada && (
+          <div className="tv-field">
+            <label className="tv-label">Categoría</label>
+            <select
+              className="tv-select"
+              value={categoriaSeleccionada}
+              onChange={(e) => setCategoriaSeleccionada(e.target.value)}
+            >
+              <option value="">Selecciona una categoría...</option>
+              {categorias.map((cat) => (
+                <option key={cat.idCategoria} value={cat.idCategoria}>
+                  {cat.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {privada && (
+          <div className="tv-field">
+            <label className="tv-label">Código de sala privada</label>
+            <input
+              type="text"
+              className="tv-input"
+              placeholder="Ej: AMIGOS-42"
+              value={codigoSala}
+              onChange={(e) => setCodigoSala(e.target.value)}
+            />
+          </div>
+        )}
+
+        <div className="d-flex flex-wrap justify-content-center align-items-center gap-3 mb-4">
+          <label className="tv-toggle-row">
+            <input
+              className="tv-checkbox"
+              type="checkbox"
+              checked={privada}
+              onChange={() => {
+                setPrivada(!privada);
+                if (!privada) setCategoriaSeleccionada("");
+              }}
+            />
             Unirme a una sala privada
           </label>
+
+          <button
+            className="tv-btn tv-btn-ghost tv-btn-sm"
+            onClick={onCrearPartidaPrivada}
+            type="button"
+          >
+            🔒 Crear partida personalizada
+          </button>
         </div>
 
         <button
-          className="btn btn-outline-primary"
-          onClick={onCrearPartidaPrivada}
-          type="button"
+          className="tv-btn tv-btn-primary tv-btn-block"
+          onClick={manejarInicio}
         >
-          🔒 Crear partida personalizada
+          🚀 Entrar al juego
         </button>
       </div>
 
-      {/* Código de sala privada */}
-      {privada && (
-        <input
-          type="text"
-          className="form-control w-75 mx-auto mb-3"
-          placeholder="Código de sala privada"
-          value={codigoSala}
-          onChange={(e) => setCodigoSala(e.target.value)}
-        />
-      )}
-
-      <button
-        className="btn btn-success btn-lg shadow"
-        onClick={manejarInicio}
-      >
-        🚀 Entrar al juego
-      </button>
-
-      {/* Contenedor de notificaciones */}
-      <ToastContainer position="top-center" theme="colored" />
+      <ToastContainer position="top-center" theme="dark" />
     </div>
   );
 }

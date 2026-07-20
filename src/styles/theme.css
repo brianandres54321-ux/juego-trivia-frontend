@@ -538,31 +538,32 @@ body {
   margin: 0.25rem 0;
 }
 
-/* ---------- Barra de símbolos matemáticos rápidos ---------- */
-.tv-symbol-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.75rem;
-}
-
-.tv-symbol-btn {
-  min-width: 2.4rem;
-  height: 2.2rem;
-  padding: 0 0.5rem;
-  border-radius: var(--tv-radius-sm);
+/* ---------- Campo matemático WYSIWYG (MathLive) ---------- */
+.tv-math-input {
+  display: block;
+  width: 100%;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--tv-glass-border);
+  border-radius: var(--tv-radius-sm);
+  padding: 0.5rem 0.9rem;
   color: var(--tv-text);
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  font-size: 1.1rem;
+  min-height: 2.7rem;
+  transition: all 0.2s ease;
+  --hue: 190; /* acento cyan para caret/selección, en línea con el tema */
 }
 
-.tv-symbol-btn:hover {
-  background: rgba(34, 211, 238, 0.16);
+.tv-math-input:focus-within {
   border-color: var(--tv-cyan);
-  transform: translateY(-1px);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.18);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.tv-formula-popover {
+  background: var(--tv-glass-bg-strong);
+  border: 1px solid var(--tv-cyan);
+  border-radius: var(--tv-radius-md);
+  padding: 1rem;
 }
 
 .tv-option-dot {

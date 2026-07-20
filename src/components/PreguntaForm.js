@@ -1,132 +1,85 @@
 // src/components/PreguntaForm.js
 import React, { useEffect, useRef, useState } from "react";
 import MathViewer from "./MathViewer";
+import MathInput from "./MathInput";
 
 const COLORES = ["tv-shape-triangle", "tv-shape-diamond", "tv-shape-circle", "tv-shape-square"];
 
-// Cada símbolo se inserta ya envuelto en "$...$" para que se renderice
-// automáticamente, sin que el usuario tenga que conocer la sintaxis LaTeX.
-// cursorGap = posición (dentro del snippet "$latex$") donde debe quedar el cursor.
-const SIMBOLOS = [
-  { label: "√", latex: "\\sqrt{}", cursorGap: 7, title: "Raíz cuadrada" },
-  { label: "ⁿ√", latex: "\\sqrt[]{}", cursorGap: 7, title: "Raíz n-ésima" },
-  { label: "xʸ", latex: "^{}", cursorGap: 3, title: "Exponente" },
-  { label: "xᵧ", latex: "_{}", cursorGap: 3, title: "Subíndice" },
-  { label: "a/b", latex: "\\frac{}{}", cursorGap: 7, title: "Fracción" },
-  { label: "∑", latex: "\\sum_{}^{}", cursorGap: 7, title: "Sumatoria" },
-  { label: "∫", latex: "\\int_{}^{}", cursorGap: 7, title: "Integral" },
-  { label: "π", latex: "\\pi", title: "Pi" },
-  { label: "±", latex: "\\pm", title: "Más/menos" },
-  { label: "×", latex: "\\times", title: "Multiplicación" },
-  { label: "÷", latex: "\\div", title: "División" },
-  { label: "≤", latex: "\\le", title: "Menor o igual" },
-  { label: "≥", latex: "\\ge", title: "Mayor o igual" },
-  { label: "≠", latex: "\\ne", title: "Distinto" },
-  { label: "∞", latex: "\\infty", title: "Infinito" },
-  { label: "α", latex: "\\alpha", title: "Alfa" },
-  { label: "θ", latex: "\\theta", title: "Theta" },
-  { label: "Δ", latex: "\\Delta", title: "Delta" },
-];
+// Las respuestas se guardan siempre envueltas en "$...$" para que el resto
+// de la app (Juego, ResultadoPregunta, SalaEspera) las renderice con KaTeX.
+// MathInput solo trabaja con el LaTeX "pelado" (sin los delimitadores).
+function pelarDolares(s) {
+  if (!s) return "";
+  const t = s.trim();
+  if (t.startsWith("$") && t.endsWith("$") && t.length > 1) return t.slice(1, -1);
+  return s;
+}
+function envolverDolares(latex) {
+  return latex ? `$${latex}$` : "";
+}
 
 function PreguntaForm({ onAgregar }) {
   const [texto, setTexto] = useState("");
   const [respuestas, setRespuestas] = useState(["", "", "", ""]);
   const [correcta, setCorrecta] = useState(null);
-  const [activeField, setActiveField] = useState({ type: "pregunta" });
-  const [pendingCursor, setPendingCursor] = useState(null); // { esPregunta, index, pos }
 
-  // Controla si cada campo muestra el texto crudo (editable) o el resultado
-  // renderizado (como la vista previa). Se activa el modo edición al hacer
-  // click/foco y se vuelve al renderizado al salir del campo.
+  // Campo de la pregunta: se ve renderizado (como la vista previa) y solo se
+  // convierte en texto editable al hacer clic; al salir vuelve a renderizarse.
   const [editandoPregunta, setEditandoPregunta] = useState(true);
-  const [editandoRespuesta, setEditandoRespuesta] = useState([true, true, true, true]);
-
   const preguntaRef = useRef(null);
-  const respuestaRefs = useRef([null, null, null, null]);
 
-  // Se ejecuta después de que React ya aplicó el nuevo valor al DOM,
-  // así el cursor queda bien ubicado sin depender de un timeout "a ciegas".
+  // Popover para insertar una fórmula matemática dentro de la pregunta,
+  // compuesta de forma 100% visual (sin escribir código LaTeX a mano).
+  const [formulaAbierta, setFormulaAbierta] = useState(false);
+  const [formulaValor, setFormulaValor] = useState("");
+
+  // Si el campo pasa a modo edición sin que el usuario haya hecho clic
+  // directamente en él (ej: tras insertar una fórmula), hay que enfocarlo
+  // "de verdad" o el próximo blur nunca dispara y queda trabado mostrando
+  // el texto crudo en vez de volver al renderizado.
   useEffect(() => {
-    if (!pendingCursor) return;
-    const node = pendingCursor.esPregunta
-      ? preguntaRef.current
-      : respuestaRefs.current[pendingCursor.index];
-    if (node) {
-      node.focus();
-      node.setSelectionRange(pendingCursor.pos, pendingCursor.pos);
-    }
-    setPendingCursor(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [texto, respuestas]);
-
-  // Al pasar del modo "vista previa" a edición, ubica el cursor al final
-  // del texto en vez de dejarlo en una posición inconsistente entre navegadores.
-  useEffect(() => {
-    const esPregunta = activeField.type === "pregunta";
-    const enEdicion = esPregunta ? editandoPregunta : editandoRespuesta[activeField.index];
-    if (!enEdicion) return;
-
-    const node = esPregunta ? preguntaRef.current : respuestaRefs.current[activeField.index];
-    const valor = esPregunta ? texto : respuestas[activeField.index];
-    if (node) {
-      const fin = valor.length;
-      node.focus();
-      node.setSelectionRange(fin, fin);
+    if (editandoPregunta && preguntaRef.current && document.activeElement !== preguntaRef.current) {
+      const nodo = preguntaRef.current;
+      const fin = texto.length;
+      nodo.focus();
+      nodo.setSelectionRange(fin, fin);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editandoPregunta, editandoRespuesta, activeField]);
+  }, [editandoPregunta]);
 
-  const activarEdicionPregunta = () => {
-    setActiveField({ type: "pregunta" });
-    setEditandoPregunta(true);
+  const activarEdicionPregunta = () => setEditandoPregunta(true);
+
+  const abrirInsertarFormula = () => {
+    setFormulaValor("");
+    setFormulaAbierta(true);
   };
 
-  const activarEdicionRespuesta = (i) => {
-    setActiveField({ type: "respuesta", index: i });
-    setEditandoRespuesta((prev) => {
-      const copia = [...prev];
-      copia[i] = true;
-      return copia;
-    });
-  };
-
-  const insertSnippet = (item) => {
-    const esPregunta = activeField.type === "pregunta";
-    const node = esPregunta ? preguntaRef.current : respuestaRefs.current[activeField.index];
-    const valorActual = esPregunta ? texto : respuestas[activeField.index];
-    if (!node) return;
-
-    const start = typeof node.selectionStart === "number" ? node.selectionStart : valorActual.length;
-    const end = typeof node.selectionEnd === "number" ? node.selectionEnd : valorActual.length;
-    const antes = valorActual.slice(0, start);
-    const despues = valorActual.slice(end);
-
-    let snippet = `$${item.latex}$`;
-    let corrimiento = 0;
-    // Evita que dos expresiones matemáticas queden pegadas y formen "$$"
-    if (antes.endsWith("$")) {
-      snippet = " " + snippet;
-      corrimiento = 1;
-    }
-    if (despues.startsWith("$")) {
-      snippet = snippet + " ";
+  const confirmarFormula = () => {
+    const node = preguntaRef.current;
+    const snippet = envolverDolares(formulaValor);
+    if (!snippet) {
+      setFormulaAbierta(false);
+      return;
     }
 
-    const nuevoValor = antes + snippet + despues;
-    const gap = item.cursorGap !== undefined ? item.cursorGap : item.latex.length + 2;
-    const cursorPos = start + corrimiento + gap;
-
-    if (esPregunta) {
+    if (node && editandoPregunta) {
+      const start = typeof node.selectionStart === "number" ? node.selectionStart : texto.length;
+      const end = typeof node.selectionEnd === "number" ? node.selectionEnd : texto.length;
+      const antes = texto.slice(0, start);
+      const despues = texto.slice(end);
+      const necesitaEspacioAntes = antes.length > 0 && !/\s$/.test(antes);
+      const necesitaEspacioDespues = despues.length > 0 && !/^\s/.test(despues);
+      const nuevoValor =
+        antes + (necesitaEspacioAntes ? " " : "") + snippet + (necesitaEspacioDespues ? " " : "") + despues;
       setTexto(nuevoValor);
     } else {
-      setRespuestas((prev) => {
-        const copia = [...prev];
-        copia[activeField.index] = nuevoValor;
-        return copia;
-      });
+      // No había foco previo en el campo: se agrega al final.
+      const necesitaEspacio = texto.length > 0 && !/\s$/.test(texto);
+      setTexto(texto + (necesitaEspacio ? " " : "") + snippet);
     }
 
-    setPendingCursor({ esPregunta, index: activeField.index, pos: cursorPos });
+    setEditandoPregunta(true);
+    setFormulaAbierta(false);
   };
 
   const agregar = () => {
@@ -143,40 +96,18 @@ function PreguntaForm({ onAgregar }) {
     setRespuestas(["", "", "", ""]);
     setCorrecta(null);
     setEditandoPregunta(true);
-    setEditandoRespuesta([true, true, true, true]);
   };
 
   return (
     <div className="tv-panel mt-3">
       <label className="tv-label">📝 Nueva pregunta</label>
 
-      <div className="tv-symbol-row">
-        {SIMBOLOS.map((item) => (
-          <button
-            key={item.label}
-            type="button"
-            className="tv-symbol-btn"
-            title={item.title}
-            onMouseDown={(e) => e.preventDefault()} // conserva el foco/cursor del campo activo
-            onClick={() => insertSnippet(item)}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-      <p className="tv-text-muted small mb-2">
-        Insertando símbolos en:{" "}
-        <strong>
-          {activeField.type === "pregunta" ? "la pregunta" : `respuesta ${activeField.index + 1}`}
-        </strong>
-      </p>
-
       {editandoPregunta || !texto.trim() ? (
         <textarea
           ref={preguntaRef}
           rows={2}
           className="tv-input tv-textarea mb-2"
-          placeholder="Ej: Calcula el área si $x^2 + \sqrt{y}$..."
+          placeholder="Ej: Calcula el área si $x^2 + \sqrt{y}$... (usa el botón de fórmula para insertar matemática)"
           value={texto}
           onFocus={activarEdicionPregunta}
           onBlur={() => setEditandoPregunta(false)}
@@ -194,6 +125,31 @@ function PreguntaForm({ onAgregar }) {
         </div>
       )}
 
+      <div className="mb-3">
+        <button type="button" className="tv-btn tv-btn-ghost tv-btn-sm" onClick={abrirInsertarFormula}>
+          ➕ √ Insertar fórmula
+        </button>
+
+        {formulaAbierta && (
+          <div className="tv-formula-popover mt-2">
+            <p className="tv-label mb-2">Escribe la fórmula (se ve formateada mientras escribís):</p>
+            <MathInput value={formulaValor} onChange={setFormulaValor} placeholder="x^2+\sqrt{y}" />
+            <div className="d-flex justify-content-end gap-2 mt-3">
+              <button
+                type="button"
+                className="tv-btn tv-btn-ghost tv-btn-sm"
+                onClick={() => setFormulaAbierta(false)}
+              >
+                Cancelar
+              </button>
+              <button type="button" className="tv-btn tv-btn-secondary tv-btn-sm" onClick={confirmarFormula}>
+                Insertar en la pregunta
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {respuestas.map((r, i) => (
         <div key={i} className="mb-2">
           <div className="d-flex align-items-center gap-2">
@@ -205,39 +161,15 @@ function PreguntaForm({ onAgregar }) {
             >
               {correcta === i ? "✓" : i + 1}
             </button>
-
-            {editandoRespuesta[i] || !r.trim() ? (
-              <input
-                type="text"
-                ref={(el) => (respuestaRefs.current[i] = el)}
-                className="tv-input"
-                placeholder={`Respuesta ${i + 1} (ej: $\\sqrt{16}$)`}
-                value={r}
-                onFocus={() => activarEdicionRespuesta(i)}
-                onBlur={() => {
-                  setEditandoRespuesta((prev) => {
-                    const copia = [...prev];
-                    copia[i] = false;
-                    return copia;
-                  });
-                }}
-                onChange={(e) => {
-                  const copia = [...respuestas];
-                  copia[i] = e.target.value;
-                  setRespuestas(copia);
-                }}
-              />
-            ) : (
-              <div
-                className="tv-input tv-editable-preview"
-                role="button"
-                tabIndex={0}
-                onClick={() => activarEdicionRespuesta(i)}
-                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && activarEdicionRespuesta(i)}
-              >
-                <MathViewer text={r} />
-              </div>
-            )}
+            <MathInput
+              value={pelarDolares(r)}
+              placeholder={`\\text{Respuesta ${i + 1}}`}
+              onChange={(latex) => {
+                const copia = [...respuestas];
+                copia[i] = envolverDolares(latex);
+                setRespuestas(copia);
+              }}
+            />
           </div>
         </div>
       ))}
